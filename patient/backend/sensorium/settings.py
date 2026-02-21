@@ -1,9 +1,13 @@
 import os
+import sys
 from pathlib import Path
 from datetime import timedelta
 from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Use hashed storage when running tests (test database)
+USE_HASHED_STORAGE = config("USE_HASHED_STORAGE", default="test" in sys.argv, cast=bool)
 
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-production')
 
@@ -12,6 +16,7 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
+    'core',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -68,6 +73,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'TEST': {'NAME': BASE_DIR / 'test_db.sqlite3'},
     },
     'patients_db': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -84,6 +90,10 @@ DATABASES = {
     'pharmacy_db': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'pharmacy_db.sqlite3',
+    },
+    'test_db': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'test_db.sqlite3',
     },
 }
 
@@ -135,8 +145,10 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://localhost:5173",
     "http://localhost:8081",
     "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
 ]
 
 CORS_ALLOW_CREDENTIALS = True

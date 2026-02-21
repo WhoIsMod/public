@@ -4,7 +4,6 @@
 - Python 3.8+
 - Node.js 14+
 - npm or yarn
-- Expo CLI (`npm install -g expo-cli`)
 
 ## Backend Setup (5 minutes)
 
@@ -23,17 +22,15 @@ python manage.py runserver
 ```bash
 cd frontend
 npm install
-npm start
+npm run dev
 ```
 
 ## Testing the Application
 
 1. **Backend**: Visit http://localhost:8000/admin to access Django admin
-2. **Frontend**: 
-   - Scan QR code with Expo Go app (mobile)
-   - Press `w` for web browser
-   - Press `a` for Android emulator
-   - Press `i` for iOS simulator
+2. **Frontend**: Open http://localhost:5173 in your browser
+
+The frontend is a **PWA** (Progressive Web App). You can install it from the browser for an app-like experience on desktop and mobile.
 
 ## Default Credentials
 
@@ -79,14 +76,29 @@ curl -X POST http://localhost:8000/api/auth/login/ \
 - Verify Python version: `python --version`
 
 ### Frontend Issues
-- Clear cache: `expo start -c`
-- Reinstall dependencies: `rm -rf node_modules && npm install`
-- Check Expo CLI version: `expo --version`
+- Clear cache: `rm -rf node_modules && npm install`
+- Ensure backend is running on port 8000 (API is proxied)
 
 ### AI Model Issues
 - Llama model download may take time on first run
 - Ensure sufficient disk space (model is ~13GB)
 - For testing, fallback interpretation will work without model
+
+## Test Database & Hashed Storage
+
+When running tests (`python manage.py test`), sensitive data is automatically hashed:
+- **OMANG**: Stored as HMAC-SHA256 hash (one-way)
+- **cellphone, address, etc.**: Encrypted with Fernet (reversible for display)
+
+To create the test database manually:
+```bash
+python manage.py setup_test_db
+```
+
+To use hashed storage for development, set in `.env`:
+```
+USE_HASHED_STORAGE=True
+```
 
 ## Next Steps
 

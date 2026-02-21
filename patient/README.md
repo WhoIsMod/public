@@ -1,6 +1,6 @@
 # Sensorium Patient Portal
 
-Complete patient portal application with Django REST Framework backend and React Native frontend.
+Complete patient portal application with Django REST Framework backend and React PWA frontend.
 
 ## Features
 
@@ -13,6 +13,7 @@ Complete patient portal application with Django REST Framework backend and React
 - Digital Medical Document Storage
 - AI Document Interpreter (Llama-based)
 - Hospital Navigation & API Integration
+- **PWA** — Installable, works offline-capable, responsive
 
 ## Tech Stack
 
@@ -25,10 +26,11 @@ Complete patient portal application with Django REST Framework backend and React
 - Celery & Redis for async tasks
 
 ### Frontend
-- React Native with Expo
-- React Navigation
-- React Native Paper (Material Design)
+- React 18 + Vite
+- React Router
+- PWA (Progressive Web App) with service worker
 - Axios for API calls
+- Teal/material-inspired UI
 
 ## Setup Instructions
 
@@ -80,15 +82,14 @@ cd frontend
 npm install
 ```
 
-3. Start Expo development server:
+3. Start development server:
 ```bash
-npm start
+npm run dev
 ```
 
-4. Run on platform:
-- Press `a` for Android
-- Press `i` for iOS
-- Press `w` for Web
+4. Open in browser: `http://localhost:5173`
+
+The PWA proxies API requests to the backend. For production, build with `npm run build` and serve the `dist` folder. You can install the app from the browser for an app-like experience.
 
 ## API Endpoints
 
@@ -184,6 +185,8 @@ python manage.py test
 4. Configure Stripe for payments
 5. Set up Celery workers for async tasks
 6. Use environment variables for sensitive data
+7. Build frontend: `cd frontend && npm run build`
+8. Serve the `dist` folder (e.g., via Nginx, or Django staticfiles)
 
 ## License
 

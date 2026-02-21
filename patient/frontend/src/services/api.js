@@ -1,36 +1,29 @@
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = 'http://localhost:8000/api';
-
+const API_BASE = '/api';
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: API_BASE,
+  headers: { 'Content-Type': 'application/json' },
 });
 
 api.interceptors.request.use(
-  async (config) => {
-    const token = await AsyncStorage.getItem('userToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+  (config) => {
+    const token = localStorage.getItem('userToken');
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (err) => Promise.reject(err)
 );
 
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    if (error.response?.status === 401) {
-      await AsyncStorage.removeItem('userToken');
-      await AsyncStorage.removeItem('userData');
+  (r) => r,
+  (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem('userToken');
+      localStorage.removeItem('userData');
+      window.location.href = '/login';
     }
-    return Promise.reject(error);
+    return Promise.reject(err);
   }
 );
 
@@ -77,9 +70,10 @@ export const paymentAPI = {
 };
 
 export const documentAPI = {
-  upload: (formData) => api.post('/documents/upload/', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }),
+  upload: (formData) =>
+    api.post('/documents/upload/', formData, {
+      headers: { 'Content-Type': undefined },
+    }),
   getList: () => api.get('/documents/list/'),
   getDetail: (id) => api.get(`/documents/${id}/`),
   download: (id) => api.get(`/documents/${id}/download/`, { responseType: 'blob' }),
