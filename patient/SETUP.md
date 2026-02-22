@@ -10,7 +10,7 @@
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py createsuperuser
@@ -31,6 +31,51 @@ npm run dev
 2. **Frontend**: Open http://localhost:5173 in your browser
 
 The frontend is a **PWA** (Progressive Web App). You can install it from the browser for an app-like experience on desktop and mobile.
+
+## File Storage
+
+Uploaded files (documents, staff photos, medication images) are stored under `backend/media/`:
+- `media/medical_documents/` – patient documents (with date subdirs)
+- `media/staff_profiles/` – staff profile images
+- `media/medications/` – medication images
+
+In development, media files are served at `/media/`. Ensure the `media` directory exists (it is created when you run `seed_data`).
+
+## MariaDB Database
+
+To use MariaDB instead of SQLite, create the database and user then set env vars:
+
+```sql
+CREATE DATABASE sensorium CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'sensorium'@'localhost' IDENTIFIED BY 'yourpassword';
+GRANT ALL ON sensorium.* TO 'sensorium'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+In `backend/.env`:
+```
+DB_ENGINE=mysql
+DB_NAME=sensorium
+DB_USER=sensorium
+DB_PASSWORD=yourpassword
+DB_HOST=localhost
+DB_PORT=3306
+```
+
+Then run `python manage.py migrate`.
+
+## Dummy Data (Seed)
+
+To populate the app with test patients, staff, appointments, documents, bills, etc.:
+
+```bash
+cd backend
+python manage.py seed_data
+```
+
+Optional: clear existing data first with `python manage.py seed_data --clear`.
+
+**Test logins** (after seed): use OMANG `200101001`, `200102002`, … with password `password123`.
 
 ## Default Credentials
 

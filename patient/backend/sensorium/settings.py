@@ -69,33 +69,36 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sensorium.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        'TEST': {'NAME': BASE_DIR / 'test_db.sqlite3'},
-    },
-    'patients_db': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'patients_db.sqlite3',
-    },
-    'medical_db': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'medical_db.sqlite3',
-    },
-    'appointments_db': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'appointments_db.sqlite3',
-    },
-    'pharmacy_db': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'pharmacy_db.sqlite3',
-    },
-    'test_db': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'test_db.sqlite3',
-    },
-}
+# Database: set DB_ENGINE=mysql to use MariaDB; otherwise SQLite
+_db_engine = config('DB_ENGINE', default='sqlite')
+if _db_engine == 'mysql':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': config('DB_NAME', default='sensorium'),
+            'USER': config('DB_USER', default='sensorium'),
+            'PASSWORD': config('DB_PASSWORD', default=''),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='3306'),
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+            'TEST': {'NAME': 'sensorium_test'},
+        },
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+            'TEST': {'NAME': BASE_DIR / 'test_db.sqlite3'},
+        },
+        'test_db': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'test_db.sqlite3',
+        },
+    }
 
 AUTH_USER_MODEL = 'patients.Patient'
 

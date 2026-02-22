@@ -19,7 +19,7 @@ class MedicalDocumentCreateView(generics.CreateAPIView):
     serializer_class = MedicalDocumentSerializer
     permission_classes = [permissions.IsAuthenticated]
     
-    def     perform_create(self, serializer):
+    def perform_create(self, serializer):
         file = self.request.FILES.get('file')
         patient_id = self.request.data.get('patient')
         patient = self.request.user

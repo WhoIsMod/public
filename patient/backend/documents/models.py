@@ -1,5 +1,7 @@
 from django.db import models
 from patients.models import Patient
+from core.storage import medical_document_upload_to
+
 
 class MedicalDocument(models.Model):
     DOCUMENT_TYPE_CHOICES = [
@@ -19,7 +21,7 @@ class MedicalDocument(models.Model):
     document_type = models.CharField(max_length=30, choices=DOCUMENT_TYPE_CHOICES)
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
-    file = models.FileField(upload_to='medical_documents/')
+    file = models.FileField(upload_to=medical_document_upload_to, blank=True, null=True)
     file_size = models.IntegerField(blank=True, null=True)
     mime_type = models.CharField(max_length=100, blank=True, null=True)
     uploaded_by = models.CharField(max_length=200, blank=True, null=True)
