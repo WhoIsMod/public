@@ -30,8 +30,10 @@ api.interceptors.response.use(
 export const authAPI = {
   register: (data) => api.post('/auth/register/', data),
   login: (data) => api.post('/auth/login/', data),
+  staffLogin: (data) => api.post('/auth/staff-login/', data),
   getProfile: () => api.get('/patients/profile/'),
   updateProfile: (data) => api.patch('/patients/profile/', data),
+  getPatients: () => api.get('/patients/list/'),
 };
 
 export const medicalAPI = {

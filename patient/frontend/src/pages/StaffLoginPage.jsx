@@ -4,8 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
 import '../styles/Auth.css';
 
-export default function LoginPage() {
-  const [omang, setOmang] = useState('');
+export default function StaffLoginPage() {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -14,16 +14,16 @@ export default function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!omang || !password) {
-      setError('Please fill in all fields');
+    if (!username || !password) {
+      setError('Please enter username and password');
       return;
     }
     setLoading(true);
     setError('');
     try {
-      const { data } = await authAPI.login({ omang, password });
-      signIn(data.access, data.patient);
-      navigate('/');
+      const { data } = await authAPI.staffLogin({ username, password });
+      signIn(data.access, data.staff ?? data.patient, true);
+      navigate('/staff');
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed. Please try again.');
     } finally {
@@ -35,17 +35,16 @@ export default function LoginPage() {
     <div className="auth-page">
       <div className="auth-card card">
         <h1 className="auth-title">Sensorium</h1>
-        <p className="auth-subtitle">Patient Portal</p>
+        <p className="auth-subtitle">Staff Portal</p>
         <form onSubmit={handleLogin}>
           <div className="form-group">
-            <label htmlFor="omang">OMANG</label>
+            <label htmlFor="username">Username</label>
             <input
-              id="omang"
+              id="username"
               type="text"
-              inputMode="numeric"
-              value={omang}
-              onChange={(e) => setOmang(e.target.value)}
-              placeholder="Enter OMANG"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter username"
               autoComplete="username"
             />
           </div>
@@ -62,13 +61,11 @@ export default function LoginPage() {
           </div>
           {error && <p className="error-msg">{error}</p>}
           <button type="submit" className="btn btn-primary full" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Logging in...' : 'Staff Login'}
           </button>
         </form>
         <p className="auth-link">
-          Don't have an account? <Link to="/register">Register</Link>
-          {' · '}
-          <Link to="/staff-login">Staff Portal</Link>
+          Patient login? <Link to="/login">Patient Portal</Link>
         </p>
       </div>
     </div>

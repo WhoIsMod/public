@@ -9,7 +9,8 @@ except ImportError:
 
 class LlamaMedicalInterpreter:
     def __init__(self):
-        self.model_name = "meta-llama/Llama-2-7b-chat-hf"
+        # TinyLlama: small, publicly available, runs on CPU; no HuggingFace approval needed
+        self.model_name = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
         if TRANSFORMERS_AVAILABLE:
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
         else:
@@ -28,7 +29,8 @@ class LlamaMedicalInterpreter:
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.model_name,
                 torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
-                device_map="auto" if self.device == "cuda" else None
+                device_map="auto" if self.device == "cuda" else None,
+                low_cpu_mem_usage=True
             )
             if self.device == "cpu":
                 self.model = self.model.to(self.device)

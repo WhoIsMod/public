@@ -1,17 +1,23 @@
 import { useState, useEffect } from 'react';
-import { appointmentAPI, staffAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { appointmentAPI, staffAPI, authAPI } from '../services/api';
 
 export default function AppointmentsPage() {
+  const { isStaff } = useAuth();
   const [appointments, setAppointments] = useState([]);
   const [staff, setStaff] = useState([]);
+  const [patients, setPatients] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ staff: '', appointment_date: new Date().toISOString().slice(0, 16), duration_minutes: '30', reason: '' });
+  const [form, setForm] = useState({ patient: '', staff: '', appointment_date: new Date().toISOString().slice(0, 16), duration_minutes: '30', reason: '' });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     load();
     staffAPI.getList().then(({ data }) => setStaff(data.results || data || []));
   }, []);
+  useEffect(() => {
+    if (isStaff) authAPI.getPatients().then(r => setPatients(r.data?.results || r.data || []));
+  }, [isStaff]);
 
   const load = async () => {
     try {
@@ -28,6 +34,7 @@ export default function AppointmentsPage() {
     setLoading(true);
     try {
       await appointmentAPI.create({
+        ...(isStaff && form.patient ? { patient: form.patient } : {}),
         staff: form.staff,
         appointment_date: new Date(form.appointment_date).toISOString(),
         duration_minutes: parseInt(form.duration_minutes),
@@ -35,7 +42,7 @@ export default function AppointmentsPage() {
       });
       alert('Appointment booked');
       setShowForm(false);
-      setForm({ staff: '', appointment_date: new Date().toISOString().slice(0, 16), duration_minutes: '30', reason: '' });
+      setForm({ patient: '', staff: '', appointment_date: new Date().toISOString().slice(0, 16), duration_minutes: '30', reason: '' });
       load();
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to book');
@@ -63,6 +70,7 @@ export default function AppointmentsPage() {
       {appointments.map((apt) => (
         <div key={apt.id} className="card">
           <strong>{new Date(apt.appointment_date).toLocaleDateString()} at {new Date(apt.appointment_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</strong>
+          {isStaff && apt.patient_details && <p>Patient: {apt.patient_details.first_name} {apt.patient_details.last_name}</p>}
           <p>{apt.staff_details?.name} — {apt.staff_details?.specialty}</p>
           <p className="muted">{apt.reason}</p>
           <div className="card-foot">
@@ -80,7 +88,22 @@ export default function AppointmentsPage() {
           <div className="modal card" onClick={(e) => e.stopPropagation()}>
             <h3>Book Appointment</h3>
             <form onSubmit={handleSubmit}>
-              <div className="form-group"><label>Staff ID *</label><input value={form.staff} onChange={(e) => setForm((f) => ({ ...f, staff: e.target.value }))} placeholder="Staff ID" required /></div>
+              {isStaff && patients.length > 0 && (
+                <div className="form-group">
+                  <label>Patient *</label>
+                  <select value={form.patient} onChange={(e) => setForm((f) => ({ ...f, patient: e.target.value }))} required>
+                    <option value="">Select patient</option>
+                    {patients.map((p) => <option key={p.id} value={p.id}>{p.first_name} {p.last_name}</option>)}
+                  </select>
+                </div>
+              )}
+              <div className="form-group">
+                <label>Staff *</label>
+                <select value={form.staff} onChange={(e) => setForm((f) => ({ ...f, staff: e.target.value }))} required>
+                  <option value="">Select staff</option>
+                  {staff.map((s) => <option key={s.id} value={s.id}>{s.name} — {s.specialty}</option>)}
+                </select>
+              </div>
               <div className="form-group"><label>Date & Time</label><input type="datetime-local" value={form.appointment_date} onChange={(e) => setForm((f) => ({ ...f, appointment_date: e.target.value }))} /></div>
               <div className="form-group"><label>Duration (min)</label><input type="number" value={form.duration_minutes} onChange={(e) => setForm((f) => ({ ...f, duration_minutes: e.target.value }))} /></div>
               <div className="form-group"><label>Reason *</label><textarea value={form.reason} onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))} rows={4} required /></div>

@@ -1,22 +1,26 @@
 import { useState, useEffect } from 'react';
-import { medicalAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { medicalAPI, authAPI } from '../services/api';
 
 const RACES = ['AFRICAN', 'CAUCASIAN', 'ASIAN', 'MIXED', 'OTHER'];
 const SEXES = ['M', 'F', 'O'];
 
 const INIT = {
-  record_id: '', heart_rate: '', underlying_condition: '', chronic_illness: '', features: '',
+  record_id: '', patient: '', heart_rate: '', underlying_condition: '', chronic_illness: '', features: '',
   race: '', sex: '', blood_pressure_systolic: '', blood_pressure_diastolic: '',
   temperature: '', weight: '', height: '', notes: '',
 };
 
 export default function MedicalPage() {
+  const { isStaff } = useAuth();
   const [records, setRecords] = useState([]);
+  const [patients, setPatients] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(INIT);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => { load(); }, []);
+  useEffect(() => { if (isStaff) authAPI.getPatients().then(r => setPatients(r.data?.results || r.data || [])); }, [isStaff]);
 
   const load = async () => {
     try {
@@ -34,6 +38,7 @@ export default function MedicalPage() {
     try {
       const submit = {
         ...form,
+        ...(isStaff && form.patient ? { patient: form.patient } : {}),
         heart_rate: form.heart_rate ? parseInt(form.heart_rate) : null,
         blood_pressure_systolic: form.blood_pressure_systolic ? parseInt(form.blood_pressure_systolic) : null,
         blood_pressure_diastolic: form.blood_pressure_diastolic ? parseInt(form.blood_pressure_diastolic) : null,
@@ -64,6 +69,7 @@ export default function MedicalPage() {
       {records.map((r) => (
         <div key={r.id} className="card">
           <div className="card-head"><strong>ID: {r.record_id}</strong><span className="chip chip-default">{r.status || 'Active'}</span></div>
+          {isStaff && r.patient_details && <p className="muted">Patient: {r.patient_details.first_name} {r.patient_details.last_name}</p>}
           {r.heart_rate && <p>Heart Rate: {r.heart_rate} bpm</p>}
           {r.chronic_illness && <p>Chronic: {r.chronic_illness}</p>}
           {r.race && <p>Race: {r.race}</p>}
@@ -78,6 +84,17 @@ export default function MedicalPage() {
           <div className="modal card" onClick={(e) => e.stopPropagation()}>
             <h3>Add Medical Record</h3>
             <form onSubmit={handleSubmit}>
+              {isStaff && patients.length > 0 && (
+                <div className="form-group">
+                  <label>Patient *</label>
+                  <select value={form.patient} onChange={(e) => update('patient', e.target.value)} required>
+                    <option value="">Select patient</option>
+                    {patients.map((p) => (
+                      <option key={p.id} value={p.id}>{p.first_name} {p.last_name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="form-group"><label>Record ID *</label><input value={form.record_id} onChange={(e) => update('record_id', e.target.value)} required /></div>
               <div className="form-row">
                 <div className="form-group"><label>Heart Rate</label><input type="number" value={form.heart_rate} onChange={(e) => update('heart_rate', e.target.value)} /></div>

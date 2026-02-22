@@ -16,7 +16,6 @@ sentencepiece
 accelerate
 pandas
 numpy
-mindspore
 PyPDF2
 python-docx
 cryptography
